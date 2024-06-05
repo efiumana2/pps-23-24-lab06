@@ -45,13 +45,41 @@ enum List[A]:
     case h :: t => t.foldLeft(h)(op)
 
   // Exercise: implement the following methods
-  def zipWithValue[B](value: B): List[(A, B)] = ???
-  def length(): Int = ???
-  def zipWithIndex: List[(A, Int)] = ???
-  def partition(predicate: A => Boolean): (List[A], List[A]) = ???
-  def span(predicate: A => Boolean): (List[A], List[A]) = ???
-  def takeRight(n: Int): List[A] = ???
-  def collect(predicate: PartialFunction[A, A]): List[A] = ???
+  def zipWithValue[B](value: B): List[(A, B)] = this match
+    case h :: t => (h,value) :: t.zipWithValue(value)
+    case Nil() => Nil()
+
+  def length1(): Int = this match
+    case h :: t => 1 + t.length1()
+    case Nil() => 0
+  def length(): Int = foldLeft(0)((acc,elem)=>(acc+1))
+  def zipWithIndex: List[(A, Int)] =  //???
+    var list: List[(A,Int)] = Nil()
+    this.foldRight((list, this.length() - 1)) {
+      case (elem, (lst, len)) => ((elem, len) :: lst, len - 1)
+    }._1
+  def partition(predicate: A => Boolean): (List[A], List[A]) = (this.filter(predicate(_)),this.filter(! predicate(_))) //???
+  def span(predicate: A => Boolean): (List[A], List[A]) = //???
+    def f(l: List[A], l1: List[A]): (List[A],List[A]) = l match
+      case h :: t if (predicate(h)) => f(t,h::l1)
+      case Nil()  => (l1.foldLeft(List.Nil()){(a,b) => b::a},Nil())
+      case _      => (l1.foldLeft(List.Nil()){(a,b) => b::a},l)
+    f(this,Nil())
+
+  def takeRight(n: Int): List[A] = //???
+    var list: List[A] = Nil()
+    this.foldRight((list,0)) {(l,a) =>
+      val (r,c) = a
+      if (c<n) (l :: r, c +1) else (r,c)
+    }._1
+
+  def collect(predicate: PartialFunction[A, A]): List[A] = //???
+    var list: List[A] = Nil()
+    this.foldRight(list) { (elem, lout) =>
+      if (predicate.isDefinedAt(elem)) predicate(elem) :: lout
+      else lout
+    }
+
 // Factories
 object List:
 
